@@ -17,7 +17,8 @@ from streamlit import (
     column_config,
     sidebar,
     download_button,
-    set_page_config
+    set_page_config,
+    warning,
 )
 
 @dataclass
@@ -151,6 +152,8 @@ def save_article_data(data: Dict):
         f.write(json.dumps(data))
 
 
+
+warning('This is still NOT the definitive version of the annotation tool!')
 
 title('Data Annotation')
 markdown('''
