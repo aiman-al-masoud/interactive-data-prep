@@ -3,6 +3,7 @@ import json
 from time import time
 import random
 from dataclasses import dataclass
+import os
 from streamlit import (
     button, 
     markdown, 
@@ -14,9 +15,10 @@ from streamlit import (
     text_area, 
     json as stjson,
     column_config,
+    sidebar,
+    download_button,
+    set_page_config
 )
-
-
 
 @dataclass
 class PromptBuilder:
@@ -136,6 +138,20 @@ def check_metadata(data: Dict) -> Dict | Literal[False]:
     return data
 
 
+def get_articles_data():
+
+    files = os.listdir('.')
+    files = [x for x in files if 'annotated-synthetic-article' in x]
+    data = [json.loads(open(x, 'r').read()) for x in files]
+    return json.dumps(data).encode('utf-8')
+
+def save_article_data(data: Dict):
+
+    with open('annotated-synthetic-article' + str(random.randint(0, 10000)) + '.json', 'w+') as f:
+        f.write(json.dumps(data))
+
+
+
 title('Data Annotation')
 markdown('''
 Come up with one topic that can contain sensitive data. 
@@ -148,6 +164,22 @@ topic = text_input(
     placeholder='a medical record, a corporate environment, a criminal record etc...', 
     key='input_topic',
 )
+
+
+set_page_config(initial_sidebar_state="collapsed")
+
+with sidebar:
+
+    markdown('# Download Annotated Data')
+
+    download_button(
+        label="Download Annotated Data",
+        data=get_articles_data(),
+        file_name="data.json",
+        mime="text/json",
+        icon=":material/download:",
+    )
+
 
 if topic:
     markdown(f'Come up with at least 4 categories of personal information that should appear in a synthetic article about "{topic}".')
@@ -214,9 +246,7 @@ if topic:
                     
                     if button('Submit'):
 
-                        with open(str(random.randint(0, 10000)) + '.json', 'w+') as f:
-
-                            f.write(json.dumps({
+                        save_article_data({
                                 'article_data': article_data,
                                 'edited_qas': edited_qas,
                                 'qas': qas,
@@ -224,6 +254,17 @@ if topic:
                                     **metadata, 
                                     'created_at': time(),
                                 },
-                            }))
+                        })
 
+                        # with open('annotated-synthetic-article' + str(random.randint(0, 10000)) + '.json', 'w+') as f:
+
+                        #     f.write(json.dumps({
+                        #         'article_data': article_data,
+                        #         'edited_qas': edited_qas,
+                        #         'qas': qas,
+                        #         'metadata': {
+                        #             **metadata, 
+                        #             'created_at': time(),
+                        #         },
+                        #     }))
 
